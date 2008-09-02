@@ -41,7 +41,8 @@ extern int ktext_start;
 #define NUM_MEMORY_ZONES  2
 
 typedef enum __page_frame_flags {
-  PF_KERNEL_PAGE = 0,
+  PF_KERNEL_PAGE = 0x1,
+  PF_IO_PAGE = 0x2,
 } page_frame_flags_t;
 
 typedef enum __memory_zone_type {

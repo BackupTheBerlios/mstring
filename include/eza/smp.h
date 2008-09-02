@@ -24,6 +24,10 @@
 #ifndef __SMP_H__
 #define __SMP_H__
 
+#include <eza/arch/types.h>
+
+extern cpu_id_t online_cpus;
+
 #ifdef CONFIG_SMP
 
   #ifndef NR_CPUS
@@ -57,6 +61,17 @@
   #define cpu_var(var,type) &var##_cpu_0
 
 #endif
+
+  static inline void set_cpu_online(cpu_id_t cpu, uint32_t online)
+  {
+    cpu_id_t mask = 1 << cpu;
+
+    if( online ) {
+      online_cpus |= mask;
+    } else {
+      online_cpus &= ~mask;
+    }
+  }
 
   #define for_each_cpu(c) \
     for(c = 0; c < NR_CPUS; c++ ) \

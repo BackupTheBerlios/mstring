@@ -41,6 +41,8 @@ EXTERN_PER_CPU(idle_tasks,task_t);
 
 extern void initialize_idle_tasks(void);
 
+cpu_id_t online_cpus;
+
 void initialize_scheduler(void)
 {
   initialize_kernel_stack_allocator();

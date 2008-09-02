@@ -1,16 +1,15 @@
 
 -include config
 
-CC = /usr/bin/gcc  
+CC = /usr/bin/gcc 
 MAKE = /usr/bin/make -s
-#LD = /home/tirra/works/Jari/m-spring/binutils-2.18/ld/ld-new
-LD = /usr/bin/ld
-OBJDUMP = /usr/bin/objdump
+LD = /opt/x86-64/bin/x86_64-unknown-linux-ld
+OBJDUMP = /opt/x86-64/bin/x86_64-unknown-linux-objdump
 OBJCOPY = /usr/bin/objcopy
-AS = /usr/bin/as
-ASFLAGS = --64
-CFLAGS = -Wall -nostdinc -fomit-frame-pointer -fno-builtin 
-LDFLAGS = -M 
+AS = /opt/x86-64/bin/x86_64-unknown-linux-as
+ASFLAGS = 
+CFLAGS = -Wall -nostdlib -nostdinc -fno-builtin -fomit-frame-pointer
+LDFLAGS = -M
 Q = @
 GREP = /bin/grep
 ECHO = /bin/echo

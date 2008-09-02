@@ -28,13 +28,13 @@
 #include <eza/arch/page.h>
 #include <eza/smp.h>
 #include <eza/swks.h>
-#include <mm/pagealloc.h>
 #include <mlibc/kprintf.h>
 #include <mm/pt.h>
 #include <eza/swks.h>
 #include <eza/arch/asm.h>
 #include <eza/kernel.h>
 #include <mlibc/string.h>
+#include <eza/pageaccs.h>
 
 extern percpu_page_cache_t percpu_page_cache_cpu_0;
 
@@ -52,22 +52,22 @@ static void initialize_kernel_page_directory(void)
 }
 
 /* Our simple page frames accessor to map physically-contiguous memory frames. */
-static page_idx_t acc_frames_left(void)
+static page_idx_t acc_frames_left(void *ctx)
 {
   return frame_idx; /* Don't care about real amount of available memory. */
 }
 
-static page_idx_t acc_next_frame(void)
+static page_idx_t acc_next_frame(void *ctx)
 {
   return frame_idx++;
 }
 
-static void acc_reset(void)
+static void acc_reset(void *ctx)
 {
   frame_idx = 0;
 }
 
-static page_frame_t *acc_alloc_page(page_flags_t flags,int clean_page) {
+static page_frame_t *acc_alloc_page(void* ctx,page_flags_t flags,int clean_page) {
   page_frame_t *frame = alloc_page(flags,clean_page);
 
   if( frame == NULL ) {
@@ -113,10 +113,17 @@ static void verify_mapping( char *zone_name, uintptr_t start_addr, page_idx_t nu
   return;
 }
 
-void arch_remap_memory(void)
+void arch_remap_memory(cpu_id_t cpu)
 {
-  if( cpu_id() == 0 ) {
+  if( cpu == 0 ) {
     int r;
+    pageaccs_linear_pa_ctx_t pa_ctx;
+
+    /* Initialize context. */
+    pa_ctx.start_page = 1;
+    pa_ctx.end_page = swks.mem_total_pages;
+
+    pageaccs_linear_pa.reset(&pa_ctx);
 
     /* First, initialize kernel default page-table directory. */
     initialize_kernel_page_directory();
@@ -129,8 +136,9 @@ void arch_remap_memory(void)
      * We intentionally skip page number zero since it will allow us to detect
      * kernel-mode NULL pointers bugs in runtime.
      */
-    frame_idx = 1;
-    r = __mm_map_pages( &paccessor,0x1000,memory_zones[ZONE_DMA].num_total_pages-1, 0 );
+//    frame_idx = 1;
+    r = __mm_map_pages( &pageaccs_linear_pa,0x1000,
+                        memory_zones[ZONE_DMA].num_total_pages-1,0, &pa_ctx );
     if( r != 0 ) {
       panic( "arch_remap_memory(): Can't remap physical pages (DMA identical mapping) !" );
     }
@@ -138,8 +146,10 @@ void arch_remap_memory(void)
     verify_mapping( "DMA zone",0x1000,memory_zones[ZONE_DMA].num_total_pages-1,1 );
 
     /* Now we should remap all available physical memory starting at 'KERNEL_BASE'. */
-    paccessor.reset();
-    r = __mm_map_pages( &paccessor, KERNEL_BASE, swks.mem_total_pages, 0 ); // swks.mem_total_pages 
+    pa_ctx.start_page = 0;
+    pageaccs_linear_pa.reset(&pa_ctx);
+    r = __mm_map_pages( &pageaccs_linear_pa, KERNEL_BASE,
+                        swks.mem_total_pages, 0, &pa_ctx );
     if( r != 0 ) {
       panic( "arch_remap_memory(): Can't remap physical pages !" );
     }
@@ -152,7 +162,8 @@ void arch_remap_memory(void)
    * initialized Level-4 page directory.
    */
   load_cr3( _k2p((uintptr_t)&kernel_pt_directory.entries[0]), 1, 1 );
-  kprintf( "All physical memory was successfully remapped.\n" );
+
+  kprintf( "CPU #%d: All physical memory was successfully remapped.\n", cpu );
 }
 
 /* AMD 64-specific function for zeroizing a page. */

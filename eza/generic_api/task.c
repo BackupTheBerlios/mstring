@@ -35,7 +35,7 @@ int setup_task_kernel_stack(task_t *task)
   if( r == 0 ) {
     r = mm_map_pages( &task->page_dir, NULL,
                       task->kernel_stack.low_address, KERNEL_STACK_PAGES,
-                      KERNEL_STACK_PAGE_FLAGS );
+                      KERNEL_STACK_PAGE_FLAGS, NULL );
   }
   return r;
 }

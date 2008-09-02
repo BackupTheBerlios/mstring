@@ -39,6 +39,7 @@
 #include <eza/interrupt.h>
 #include <eza/scheduler.h>
 #include <eza/arch/fault.h>
+#include <eza/arch/asm.h>
 
 #define CONFIG_STACK_SIZE  ((1 << 0) * PAGE_SIZE)
 
@@ -49,19 +50,35 @@ init_t init={ /* initially created for userspace task, requered for servers load
 /* current context safe */
 context_t crsc;
 
-#define load_stack_pointer(sp) \
-  __asm__ volatile (\
-     "mov %%rax,%%rsp\n" \
-     :: "a" (sp) )
-
-static void rest_boot( cpu_id_t cpu )
+static void main_routine_stage1(void)
 {
-  kernel_task_data_t *me = idle_tasks[cpu];
-  uintptr_t sp = me->task.kernel_stack.low_address + 
-                 KERNEL_STACK_SIZE - PAGE_SIZE;
+  /* Initialize PICs and setup common interrupt handlers. */
+  arch_initialize_irqs();
 
-  load_stack_pointer(sp);
+  /* Initialize known hardware devices. */
+  initialize_common_hardware();
+    
+  /* Since the PIC is initialized, all interrupts from the hardware
+   * is disabled. So we can enable local interrupts since we will
+   * receive interrups from the other CPUs via LAPIC upon unleashing
+   * the other CPUs.
+   */
+  interrupts_enable();
 
+  set_cpu_online(0,1);  /* We're online. */
+  initialize_swks();
+
+  /* The other CPUs are running, the scheduler is ready, so we can
+   * enable all interrupts.
+   */
+  enable_all_irqs();
+
+  /* TODO: Here we should wake up all other CPUs, if any. */
+
+  /* OK, we can proceed. */
+  start_init();
+ 
+  /* Enter idle loop. */
   idle_loop();
 }
 
@@ -72,39 +89,24 @@ void main_routine(void) /* this function called from boostrap assembler code */
   /* After initializing memory stuff, the master CPU should perform
    * the final initializations.
    */
-  if( cpu_id() == 0 ) {
-    kcons->enable();
-    kprintf("[LW] Bootstrap initied.\n");
-    kprintf("[LW] Low level console initied.\n[MSG] Continue higher initialization...\n");
-    /* init memory manager stuff - stage 0 */
-    arch_mm_stage0_init();
-    kprintf("[MM] Stage0 memory manager initied.\n");    
-    install_fault_handlers();
-    initialize_irqs();
-    initialize_timer();
-    initialize_scheduler();
+  kcons->enable();
+  kprintf("[LW] Bootstrap initied.\n");
+  kprintf("[LW] Low level console initied.\n[MSG] Continue higher initialization...\n");
+  /* init memory manager stuff - stage 0 */
+  arch_mm_stage0_init(0);
+  kprintf("[MM] Stage0 memory manager initied.\n");    
+  install_fault_handlers();
+  initialize_irqs();
+  initialize_scheduler();
+  initialize_timer();
 
-    /* Initialize PICs and setup common interrupt handlers. */
-    arch_initialize_irqs();
+  /* Now we can switch stack to our new kernel stack. */
+  load_stack_pointer(idle_tasks[0]->task.kernel_stack.high_address-PAGE_SIZE);
 
-    /* Initialize known hardware devices. */
-    initialize_common_hardware();
-    
-    /* Since the PIC is initialized, all interrupts from the hardware
-     * is disabled. So we can enable local interrupts since we will
-     * receive interrups from the other CPUs via LAPIC upon unleashing
-     * the other CPUs.
-     */
-    interrupts_enable();
-    initialize_swks();
-
-    /* The other CPUs are running, the scheduler is ready, so we can
-     * enable all interrupts.
-     */
-    enable_all_irqs();
-  }
-  
-  rest_boot( 0 );
+  /* Now we can continue initialization with properly initialized kernel
+   * stack frame.
+   */
+  main_routine_stage1();
 }
 
 #ifdef CONFIG_SMP

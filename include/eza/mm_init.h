@@ -27,7 +27,7 @@
 
 #include <eza/arch/types.h>
 
-void arch_mm_stage0_init(void);
+void arch_mm_stage0_init(cpu_id_t cpu);
 
 #endif /* __MM_INIT_H__*/
 

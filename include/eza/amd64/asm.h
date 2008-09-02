@@ -179,5 +179,13 @@ static inline void load_cr3( uintptr_t phys_addr, uint8_t pcd, uint8_t pwt )
  __asm__ volatile(  "movq %%rax, %%cr3" :: "a" (cr3_val) );
 }
 
+/* Load RSP with a given value. It MUST NOT be a function since after
+ * stack switch it won't be possible to return.
+ */
+#define load_stack_pointer(sp) \
+  __asm__ volatile (\
+     "mov %%rax,%%rsp\n" \
+     :: "a" (sp) )
+
 #endif /* __ASM_H__ */
 

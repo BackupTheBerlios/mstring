@@ -33,7 +33,8 @@
 #define PRIORITY_MAX  128
 #define IDLE_TASK_PRIORITY (PRIORITY_MAX+1)
 
-#define current_task() arch_current_task()
+#define current_task()  arch_current_task()
+#define system_sched_data()  arch_system_sched_data()
 
 typedef uint32_t time_slice_t;
 
@@ -68,13 +69,14 @@ typedef struct __cpu_sched_meta_data {
   task_t *idle_task;
 } cpu_sched_meta_data_t;
 
-typedef struct __system_data {
+typedef struct __system_sched_data {
   cpu_id_t cpu_id;
+  uint32_t flags;
   uint32_t irq_num;
-} system_data_t;
+} system_sched_data_t;
 
 typedef struct __kernel_task_data {
-  system_data_t system_data;
+  system_sched_data_t system_data;
   task_t task;
 } kernel_task_data_t;
 

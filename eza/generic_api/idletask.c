@@ -19,13 +19,13 @@ void idle_loop(void)
 {
   int target_tick = swks.system_ticks_64 + 100;
   task_t *c = current_task();
-  kernel_task_data_t *td = (kernel_task_data_t *)((uintptr_t)c - 8);
 
   /* TODO: Enable rescheduling interrupts here. */
   for( ;; ) {
     if( swks.system_ticks_64 == target_tick ) {
-      kprintf( " - Tick, tick ! (ticks: %d, My PID: %d, My priorirty: %d)\n",
-               swks.system_ticks_64, current_task()->pid, current_task()->priority );
+      kprintf( " - Tick, tick ! (ticks: %d, My PID: %d, My priorirty: %d, CPU ID: %d\n",
+               swks.system_ticks_64, current_task()->pid, current_task()->priority,
+               system_sched_data()->cpu_id );
       target_tick += 50150;
     }
   }
@@ -34,7 +34,7 @@ void idle_loop(void)
 
 /* For initial stack filling. */
 static page_frame_t *next_frame;
-static page_idx_t acc_next_frame(void)
+static page_idx_t acc_next_frame(void *ctx)
 {
   if(next_frame != NULL ) {
     return next_frame->idx;
@@ -91,7 +91,7 @@ void initialize_idle_tasks(void)
     next_frame = NULL;
     r = mm_map_pages( &task->page_dir, &idle_pacc,
                       task->kernel_stack.low_address, KERNEL_STACK_PAGES,
-                      KERNEL_STACK_PAGE_FLAGS );
+                      KERNEL_STACK_PAGE_FLAGS, NULL );
     if( r != 0 ) {
       panic( "initialize_idle_tasks(): Can't map kernel stack for idle task !" );
     }
@@ -102,7 +102,7 @@ void initialize_idle_tasks(void)
     next_frame = ts_page;
     r = mm_map_pages( &task->page_dir, &idle_pacc,
                       task->kernel_stack.low_address & KERNEL_STACK_MASK, 1,
-                      KERNEL_STACK_PAGE_FLAGS );
+                      KERNEL_STACK_PAGE_FLAGS, NULL );
     if( r != 0 ) {
       panic( "initialize_idle_tasks(): Can't map kernel stack for idle task !" );
     }

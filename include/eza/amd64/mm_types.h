@@ -134,7 +134,7 @@ extern ptr_16_32_t prot_gdt; /* GDT while protected mode */
 extern tss_t *tssp; /* TSS */
 
 /* initing functions */
-extern void arch_pmm_init(void);
+extern void arch_pmm_init(cpu_id_t cpu);
 extern void idt_init(void);
 extern void tss_init(tss_t *tp);
 

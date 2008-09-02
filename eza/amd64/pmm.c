@@ -130,10 +130,9 @@ int install_interrupt_gate( uint32_t slot, uintptr_t handler,
 }
 
 
-void arch_pmm_init(void)
+void arch_pmm_init(cpu_id_t cpu)
 {
   tss_descriptor_t *tss_dsc;
-  int cpu = cpu_id();
   ptr_16_64_t gdtr;
   tss_t *tss_p;
   ptr_16_64_t idtr;
@@ -167,12 +166,12 @@ void arch_pmm_init(void)
   idtr_load(&idtr);
 
   /* Build page array. */
-  if( cpu == 0) {
+  if( cpu == 0 ) {
     build_page_array(); 
   }
 
   /* Remap memory using 4K page frames. All CPUs has to do this. */
-  arch_remap_memory();
+  arch_remap_memory(cpu);
 
   return;
 }

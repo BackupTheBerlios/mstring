@@ -45,10 +45,10 @@ typedef struct __page_directory {
 extern page_directory_t kernel_pt_directory;
 
 typedef struct __page_frame_accessor {
-  page_idx_t (*frames_left)(void);
-  page_idx_t (*next_frame)(void);
-  void (*reset)(void);
-  page_frame_t *(*alloc_page)(page_flags_t flags,int clean_page);
+  page_idx_t (*frames_left)(void *ctx);
+  page_idx_t (*next_frame)(void *ctx);
+  void (*reset)(void *ctx);
+  page_frame_t *(*alloc_page)(void *ctx, page_flags_t flags,int clean_page);
 } page_frame_accessor_t;
 
 /**
@@ -61,9 +61,9 @@ typedef struct __page_frame_accessor {
 void initialize_page_directory(page_directory_t *pd);
 
 /* Macro that uses initial top-level page directory as target directory. */
-#define __mm_map_pages(pacc,virt_addr,num_pages,flags) \
+#define __mm_map_pages(pacc,virt_addr,num_pages,flags,ctx) \
                mm_map_pages(&kernel_pt_directory,pacc,virt_addr, \
-                       num_pages, flags)
+                       num_pages, flags,ctx)
 /**
  * @fn mm_map_pages( page_directory_t *top_level_pgd, uintptr_t phys_addr,
  *               uintptr_t virt_addr, size_t num_pages, page_flags_t flags ); 
@@ -83,7 +83,7 @@ void initialize_page_directory(page_directory_t *pd);
  *         -EINVAL if insufficient number of pages or addresses were passed.
  */
 int mm_map_pages( page_directory_t *top_level_pgd, page_frame_accessor_t *pacc,
-                  uintptr_t virt_addr, size_t num_pages, page_flags_t flags );
+                  uintptr_t virt_addr, size_t num_pages, page_flags_t flags,void *ctx );
 
 /**
  * @fn mm_pin_virtual_address( page_directory_t *pd, uintptr_t virt_addr )

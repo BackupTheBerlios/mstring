@@ -40,14 +40,14 @@ static void cpu_clean_am_flag(void);
  */
 static void cpu_clean_iopl_nt_flags(void);
 
-void arch_mm_stage0_init(void)
+void arch_mm_stage0_init(cpu_id_t cpu)
 {
   set_efer_flag(AMD_NXE_FLAG);
   /* prepare FPU to use */
   cpu_setup_fpu();
   arch_bios_init();
   /* prepare segmentation */
-  arch_pmm_init();
+  arch_pmm_init(cpu);
   /* disable i/o on upper levels */
   cpu_clean_iopl_nt_flags();
   /* disable align checking */
