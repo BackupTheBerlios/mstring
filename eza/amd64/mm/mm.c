@@ -51,39 +51,6 @@ static void initialize_kernel_page_directory(void)
   kernel_pt_directory.entries = k_entries;
 }
 
-/* Our simple page frames accessor to map physically-contiguous memory frames. */
-static page_idx_t acc_frames_left(void *ctx)
-{
-  return frame_idx; /* Don't care about real amount of available memory. */
-}
-
-static page_idx_t acc_next_frame(void *ctx)
-{
-  return frame_idx++;
-}
-
-static void acc_reset(void *ctx)
-{
-  frame_idx = 0;
-}
-
-static page_frame_t *acc_alloc_page(void* ctx,page_flags_t flags,int clean_page) {
-  page_frame_t *frame = alloc_page(flags,clean_page);
-
-  if( frame == NULL ) {
-    panic( "[!!!!!] Can't allocate a page !" );
-  }
-
-  return frame;
-}
-
-static page_frame_accessor_t paccessor = {
-  .frames_left = acc_frames_left,
-  .next_frame = acc_next_frame,
-  .reset = acc_reset,
-  .alloc_page = acc_alloc_page,
-};
-
 static void verify_mapping( char *zone_name, uintptr_t start_addr, page_idx_t num_pages,
                             page_idx_t start_idx ) {
   page_idx_t i, t;
@@ -136,7 +103,6 @@ void arch_remap_memory(cpu_id_t cpu)
      * We intentionally skip page number zero since it will allow us to detect
      * kernel-mode NULL pointers bugs in runtime.
      */
-//    frame_idx = 1;
     r = __mm_map_pages( &pageaccs_linear_pa,0x1000,
                         memory_zones[ZONE_DMA].num_total_pages-1,0, &pa_ctx );
     if( r != 0 ) {
