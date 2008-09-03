@@ -23,7 +23,7 @@
  *
  */
 
-/* #include <eza/arch/context.h> */
+#include <eza/arch/context.h>
 
 .code64
 
@@ -55,35 +55,6 @@
 .global security_exception_fault_handler
 .global hi_level_fault_handlers 
 
-
-#define SAVE_ALL_BUT_RAX \
-    pushfq; \
-    cld; \
-    push %rbx; \
-    push %rcx; \
-    push %rdx; \
-    push %rdi; \
-    push %rsi; \
-    push %rbp;
-
-#define RESTORE_ALL_BUT_RAX \
-    pop %rbp; \
-    pop %rsi; \
-    pop %rdi; \
-    pop %rdx; \
-    pop %rcx; \
-    pop %rbx; \
-    popfq;
-
-#define SAVE_ALL \
-    push %rax; \
-    SAVE_ALL_BUT_RAX
-
-#define RESTORE_ALL \
-    RESTORE_ALL_BUT_RAX; \
-    pop %rax
-
-#define SAVED_REGISTERS_SIZE (8*8)
 
 arch_delay_loop:
 0:	dec %rdi
@@ -142,7 +113,7 @@ v=0
 low_irq_stubs:
 
 .rept 16
-1:  push %rax
+1:  pushq %rax
     movq $v,%rax
     jmp common_interrupt
 
@@ -154,23 +125,30 @@ v=v+1
 .endr
 
 common_interrupt:
-  SAVE_ALL_BUT_RAX
+  SAVE_ALL
   movq %rax,%rdi
   call do_irq
   RESTORE_ALL
+  popq %rax
   iretq
 
 /* Here goes handlers for CPU-specific fault handlers ranged at [0 .. 31]
  */
 divide_by_zero_fault_handler:
-  push %rax
+  pushq %rax
   movl $0x0,%eax
 common_exception_path:
-  SAVE_ALL_BUT_RAX 
-  movq %rsp,%rdi
-  addq $SAVED_REGISTERS_SIZE,%rdi
+  SAVE_ALL
+  
+  /* No we have to prepare interrupt/exception stack frame.
+   * Main job willbe done in 'SAVE_ALL', bu we must add 8 bytes to
+   * skip %rax on the stack since we saved it before calling SAVE_ALL */
+  add $8, %rdi
+
+  /* Now we call call the handler. */
   call *hi_level_fault_handlers(,%rax,8)
   RESTORE_ALL
+  popq %rax
   iretq
 
 debug_fault_handler:
@@ -305,5 +283,4 @@ hi_level_fault_handlers:
 .quad security_exception_fault_handler_impl    /* 30 */
 .quad reserved_fault_handler_impl              /* 31 */
 
-  
-l001: jmp l001
+
