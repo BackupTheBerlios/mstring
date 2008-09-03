@@ -26,7 +26,7 @@ void idle_loop(void)
       kprintf( " - Tick, tick ! (ticks: %d, My PID: %d, My priorirty: %d, CPU ID: %d\n",
                swks.system_ticks_64, current_task()->pid, current_task()->priority,
                system_sched_data()->cpu_id );
-      target_tick += 50150;
+      target_tick += 10150;
     }
   }
 }
