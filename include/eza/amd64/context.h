@@ -37,7 +37,81 @@
 
 #define OFFSET_TLS  OFFSET_IPL
 
-#define SAVE_GPR 
+/* Save all general purpose registers  */
+#define SAVE_GPR \
+    pushq %rax; \
+    pushfq; \
+    pushq %rbx; \
+    pushq %rcx; \
+    pushq %rdx; \
+    pushq %rdi; \
+    pushq %rsi; \
+    pushq %rbp; \
+    pushq %r8; \
+    pushq %r9; \
+    pushq %r10; \
+    pushq %r11; \
+    pushq %r12; \
+    pushq %r13; \
+    pushq %r14; \
+    pushq %r15;
+
+#define RESTORE_GPR \
+    popq %r15; \
+    popq %r14; \
+    popq %r13; \
+    popq %r12; \
+    popq %r11; \
+    popq %r10; \
+    popq %r9; \
+    popq %r8; \
+    popq %rbp; \
+    popq %rsi; \
+    popq %rdi; \
+    popq %rdx; \
+    popq %rcx; \
+    popq %rbx; \
+    popfq; \
+    popq %rax;
+
+#define NUM_GPR_SAVED 16
+#define SAVED_GPR_SIZE (NUM_GPR_SAVED * 8)
+
+/* We assume that all GRPs were saved earlier !
+ * Allocate an area for saving MMX & FX state. Finally, we must adjust %rdi
+ * to point just after saved GPRs area.
+ */
+#define SAVE_MM \
+  mov %rsp, %r8; \
+  and $0xfffffffffffffe00, %r8; \
+  mov %rsp, %r9; \
+  sub %r8, %r9; \
+  add $512, %r9; \
+  mov %rsp, %r10; \
+  sub %r9, %rsp; \
+  fxsave (%rsp); \
+  pushq %r10; \
+  mov %r10, %rdi; \
+  add $SAVED_GPR_SIZE, %rdi
+
+#define RESTORE_MM \
+  popq %r10; \
+  fxrstor (%rsp); \
+  mov %r10, %rsp;
+
+/* NOTE: SAVE_MM initializes %rsi so that it points to iterrupt/exception stack frame. */
+#define SAVE_ALL \
+  SAVE_GPR \
+  cli; \
+  SAVE_MM \
+    
+
+#define RESTORE_ALL \
+  RESTORE_MM \
+  RESTORE_GPR
+
+#define SAVED_REGISTERS_SIZE \
+   ((NUM_GPR_SAVED)*8)
 
 /* assembler macros for save and restore context */
 #ifdef __ASM__
