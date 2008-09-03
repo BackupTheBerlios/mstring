@@ -16,6 +16,7 @@
  *
  * (c) Copyright 2006,2007,2008 MString Core Team <http://mstring.berlios.de>
  * (c) Copyright 2008 Tirra <tirra.newly@gmail.com>
+ * (c) Copyright 2008 Michael Tsymbalyuk <mtzaurus@gmail.com>
  *
  * include/eza/amd64/context.h: structure definion for context and related stuff
  *                              assembler macros and some constants
@@ -39,7 +40,6 @@
 
 /* Save all general purpose registers  */
 #define SAVE_GPR \
-    pushq %rax; \
     pushfq; \
     pushq %rbx; \
     pushq %rcx; \
@@ -71,10 +71,9 @@
     popq %rdx; \
     popq %rcx; \
     popq %rbx; \
-    popfq; \
-    popq %rax;
+    popfq;
 
-#define NUM_GPR_SAVED 16
+#define NUM_GPR_SAVED 15
 #define SAVED_GPR_SIZE (NUM_GPR_SAVED * 8)
 
 /* We assume that all GRPs were saved earlier !
@@ -91,8 +90,6 @@
   sub %r9, %rsp; \
   fxsave (%rsp); \
   pushq %r10; \
-  mov %r10, %rdi; \
-  add $SAVED_GPR_SIZE, %rdi
 
 #define RESTORE_MM \
   popq %r10; \
@@ -104,7 +101,7 @@
   SAVE_GPR \
   cli; \
   SAVE_MM \
-    
+
 
 #define RESTORE_ALL \
   RESTORE_MM \
@@ -162,6 +159,10 @@ typedef struct __context_t { /* others don't interesting... */
 
   ipl_t ipl;
 } __attribute__ ((packed)) context_t;
+
+typedef struct __arch_context_t {
+  uintptr_t cr3, rsp;
+} arch_context_t;
 
 #endif /* __ASM__ */
 

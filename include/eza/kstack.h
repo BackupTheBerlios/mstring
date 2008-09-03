@@ -34,7 +34,6 @@ typedef struct __kernel_stack_chunk {
 typedef struct __kernel_stack {
   bit_idx_t id;
   uintptr_t high_address, low_address;
-  uintptr_t stack_pointer;
 } kernel_stack_t;
 
 typedef struct __kernel_stack_allocator_context {
@@ -45,6 +44,7 @@ typedef struct __kernel_stack_allocator_context {
 
 int allocate_kernel_stack(kernel_stack_t *stack);
 int free_kernel_stack(uint32_t id);
+void initialize_kernel_stack_allocator(void);
 
 #define BITMAP_ENTRIES_COUNT ( (PAGE_SIZE - (sizeof(kernel_stack_chunk_t))) / sizeof(uint64_t) )
 

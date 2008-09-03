@@ -142,8 +142,11 @@ common_exception_path:
   
   /* No we have to prepare interrupt/exception stack frame.
    * Main job willbe done in 'SAVE_ALL', bu we must add 8 bytes to
-   * skip %rax on the stack since we saved it before calling SAVE_ALL */
-  add $8, %rdi
+   * skip %rax on the stack since we saved it before calling SAVE_ALL
+   * %r10 contains the value of %rsp before aligning for saving XMM data.
+   */
+  mov %r10, %rdi; \
+  add $SAVED_GPR_SIZE + 8, %rdi 
 
   /* Now we call call the handler. */
   call *hi_level_fault_handlers(,%rax,8)

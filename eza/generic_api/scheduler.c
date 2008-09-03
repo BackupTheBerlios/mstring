@@ -61,5 +61,9 @@ void scheduler_tick(void)
 
 void schedule(void)
 {
+  task_t *current = current_task();
+  task_t *next = NULL;
+
+  arch_activate_task(next);
 }
 

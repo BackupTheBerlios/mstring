@@ -100,9 +100,6 @@ int free_kernel_stack(bit_idx_t id)
 
 void initialize_kernel_stack_allocator(void)
 {
-  kernel_stack_t stack;
-  int r;
-
   starting_kernel_stack_address = KERNEL_BASE;
   initialize_stack_allocator_context(&main_stack_ctx);
 }
