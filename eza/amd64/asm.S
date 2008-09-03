@@ -23,6 +23,8 @@
  *
  */
 
+/* #include <eza/arch/context.h> */
+
 .code64
 
 .text
