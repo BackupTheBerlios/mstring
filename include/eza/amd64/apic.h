@@ -114,9 +114,9 @@ struct __local_apic_esr_t { /* error status register */
     rx_illegal_vector : 1,
     reg_illegal_addr : 1,
     __res1 : 24;
-  uint32_t __reserved0[3];
+  uint32_t __reserved0;
   uint32_t errs;
-  uint32_t __reserved1[3];
+  uint32_t __reserved1;
 } __attribute__ ((packed));
 
 struct __local_apic_icr1_t {
@@ -139,7 +139,7 @@ struct __local_apic_icr2_t {
     __res1 :  4;
   uint32_t __res2 : 24,
     logical_dest: 8;
-  uint32_t __reserved[3];
+  uint32_t __reserved[2];
 } __attribute__ ((packed));
 
 struct __local_apic_lvt_timer_t {

@@ -92,8 +92,7 @@ void main_routine(void) /* this function called from boostrap assembler code */
    * the final initializations.
    */
   kcons->enable();
-  kprintf("[LW] Bootstrap initied.\n");
-  kprintf("[LW] Low level console initied.\n[MSG] Continue higher initialization...\n");
+  kprintf("[LW] MuiString starts ...\n");
   /* init memory manager stuff - stage 0 */
   arch_mm_stage0_init(0);
   kprintf("[MM] Stage0 memory manager initied.\n");    

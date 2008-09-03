@@ -25,9 +25,45 @@
 #include <eza/arch/apic.h>
 #include <eza/interrupt.h>
 #include <eza/timer.h>
+#include <mm/mm.h>
+#include <mm/pt.h>
+#include <eza/arch/page.h>
+#include <eza/pageaccs.h>
 #include <mlibc/kprintf.h>
+
+static int __map_apic_page(void)
+{
+  pageaccs_linear_pa_ctx_t pa_ctx;
+  uint32_t res;
+
+  pa_ctx.start_page=APIC_BASE >> PAGE_WIDTH;
+  pa_ctx.end_page=APIC_BASE >> PAGE_WIDTH;
+
+  pageaccs_linear_pa.reset(&pa_ctx);
+
+  res=__mm_map_pages(&pageaccs_linear_pa,APIC_BASE,1,PF_IO_PAGE,&pa_ctx);
+
+  if(res<0) {
+    kprintf("[MM] Cannot map IO page for APIC.\n");
+    return -1;
+  }
+
+  return 0;
+}
 
 void arch_specific_init(void)
 {
+  int err=0;
+
+  kprintf("[HW] Init arch specific ... ");
+  if(__map_apic_page()<0) 
+    err++;
+  
+  if(err) {
+    kprintf("Fail\nErrors: %d\n",err);
+    return;
+  } else
+    kprintf("OK\n");
+
   local_bsp_apic_init();
 }

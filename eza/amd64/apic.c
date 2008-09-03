@@ -111,13 +111,14 @@ void local_bsp_apic_init(void)
   v=local_apic->version.version;
   kprintf("[LW] APIC version: %d\n",v);
   /* first we're need to clear APIC to avoid magical results */
-  __local_apic_clear();
+  //  __local_apic_clear();
 
   /* enable APIC */
   __enable_apic();
 
   /* enable wire mode*/
   /* set nil vectors */
+
   __set_lvt_lint_vector(0,0x0);
   __set_lvt_lint_vector(1,0x0);
 
