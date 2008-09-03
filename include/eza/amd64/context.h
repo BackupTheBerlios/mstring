@@ -37,6 +37,8 @@
 
 #define OFFSET_TLS  OFFSET_IPL
 
+#define SAVE_GPR 
+
 /* assembler macros for save and restore context */
 #ifdef __ASM__
 
