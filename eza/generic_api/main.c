@@ -40,6 +40,7 @@
 #include <eza/scheduler.h>
 #include <eza/arch/fault.h>
 #include <eza/arch/asm.h>
+#include <eza/arch/platform.h>
 
 #define CONFIG_STACK_SIZE  ((1 << 0) * PAGE_SIZE)
 
@@ -67,6 +68,7 @@ static void main_routine_stage1(void)
 
   set_cpu_online(0,1);  /* We're online. */
   initialize_swks();
+  arch_specific_init();
 
   /* The other CPUs are running, the scheduler is ready, so we can
    * enable all interrupts.

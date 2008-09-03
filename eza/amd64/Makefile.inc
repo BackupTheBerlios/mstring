@@ -11,6 +11,7 @@ LIBARCHEZA_OBJS=eza/amd64/pmm.o eza/amd64/e820map.o \
 	eza/amd64/i8254.o \
 	eza/amd64/apic.o \
 	eza/amd64/timer.o \
+	eza/amd64/platform.o \
 	eza/amd64/strmem.o \
 	eza/amd64/interrupt.o \
 	eza/amd64/fault.o \

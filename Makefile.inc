@@ -3,10 +3,10 @@
 
 CC = /usr/bin/gcc 
 MAKE = /usr/bin/make -s
-LD = /opt/x86-64/bin/x86_64-unknown-linux-ld
-OBJDUMP = /opt/x86-64/bin/x86_64-unknown-linux-objdump
+LD = /usr/bin/ld
+OBJDUMP = /usr/bin/objdump
 OBJCOPY = /usr/bin/objcopy
-AS = /opt/x86-64/bin/x86_64-unknown-linux-as
+AS = /usr/bin/as
 ASFLAGS = 
 CFLAGS = -Wall -nostdlib -nostdinc -fno-builtin -fomit-frame-pointer
 LDFLAGS = -M

@@ -289,7 +289,13 @@ struct __local_apic_t {
 } __attribute__ ((packed));
 
 /*uffh, functions*/
-void __local_bsp_apic_init(void);
+void local_bsp_apic_init(void);
 
+#ifdef CONFIG_SMP
+
+void arch_smp_init(void);
+
+#endif /* CONFIG_SMP 
+*/
 #endif
 
