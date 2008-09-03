@@ -16,7 +16,8 @@ LIBARCHEZA_OBJS=eza/amd64/pmm.o eza/amd64/e820map.o \
 	eza/amd64/interrupt.o \
 	eza/amd64/fault.o \
 	eza/amd64/mm/mm.o \
-	eza/amd64/mm/pt.o
+	eza/amd64/mm/pt.o \
+	eza/amd64/sched/task.o
 
 
 ifeq ($(CONFIG_SMP),y)

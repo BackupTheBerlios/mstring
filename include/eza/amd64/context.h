@@ -40,13 +40,6 @@
 
 /* Save all general purpose registers  */
 #define SAVE_GPR \
-    pushfq; \
-    pushq %rbx; \
-    pushq %rcx; \
-    pushq %rdx; \
-    pushq %rdi; \
-    pushq %rsi; \
-    pushq %rbp; \
     pushq %r8; \
     pushq %r9; \
     pushq %r10; \
@@ -54,9 +47,23 @@
     pushq %r12; \
     pushq %r13; \
     pushq %r14; \
-    pushq %r15;
+    pushq %r15; \
+    pushfq; \
+    pushq %rbx; \
+    pushq %rcx; \
+    pushq %rdx; \
+    pushq %rdi; \
+    pushq %rsi; \
+    pushq %rbp; \
 
 #define RESTORE_GPR \
+    popq %rbp; \
+    popq %rsi; \
+    popq %rdi; \
+    popq %rdx; \
+    popq %rcx; \
+    popq %rbx; \
+    popfq; \
     popq %r15; \
     popq %r14; \
     popq %r13; \
@@ -65,13 +72,6 @@
     popq %r10; \
     popq %r9; \
     popq %r8; \
-    popq %rbp; \
-    popq %rsi; \
-    popq %rdi; \
-    popq %rdx; \
-    popq %rcx; \
-    popq %rbx; \
-    popfq;
 
 #define NUM_GPR_SAVED 15
 #define SAVED_GPR_SIZE (NUM_GPR_SAVED * 8)
@@ -163,6 +163,14 @@ typedef struct __context_t { /* others don't interesting... */
 typedef struct __arch_context_t {
   uintptr_t cr3, rsp;
 } arch_context_t;
+
+/* Structure that represent GPRs on the stack. %RAX is not saved
+ * since it contains system call numbers and isn't used by the low-level
+ * kernel logic.
+ */
+typedef struct __regs {
+  uint64_t rbp, rsi, rdi, rdx, rcx, rbx, flags;
+} regs_t;
 
 #endif /* __ASM__ */
 
