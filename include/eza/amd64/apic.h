@@ -290,6 +290,9 @@ struct __local_apic_t {
 
 /*uffh, functions*/
 void local_bsp_apic_init(void);
+void local_apic_bsp_switch(void);
+
+void local_apic_timer_init(void);
 
 #ifdef CONFIG_SMP
 

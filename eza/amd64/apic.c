@@ -23,6 +23,7 @@
 
 #include <eza/interrupt.h>
 #include <eza/arch/8259.h>
+#include <eza/arch/i8254.h>
 #include <eza/arch/types.h>
 #include <eza/arch/asm.h>
 #include <eza/arch/apic.h>
@@ -101,17 +102,46 @@ void __local_apic_clear(void)
   
 }
 
+static int __local_apic_check(void)
+{
+  uint32_t v0,v1;
+  struct __local_apic_version_t *ver=(struct __local_apic_version_t *)&(local_apic->version);
+
+  v0=local_apic->version.version;
+  ver->version=0x0;
+  v1=local_apic->version.version;
+  if(v0!=v1) 
+    return -1;
+
+  /* version check */
+  v0=(v1)&0xffu;
+  if(v0==0x0 || v0==0xff)
+    return -1;
+
+  /*check for lvt*/
+  v1=__get_maxlvt();
+  if(v1<0x02 || v1==0xff)
+    return -1;
+
+  return 0;
+}
+
 /*init functions makes me happy*/
 void local_bsp_apic_init(void)
 {
   uint32_t v;
 
-  kprintf("{INFO} Initing APIC: \n");
+  kprintf("[LW] Checking APIC is present ... ");
+  if(__local_apic_check()<0) {
+    kprintf("FAIL\n");
+    return;
+  } else
+    kprintf("OK\n");
 
   v=local_apic->version.version;
   kprintf("[LW] APIC version: %d\n",v);
   /* first we're need to clear APIC to avoid magical results */
-  //  __local_apic_clear();
+  __local_apic_clear();
 
   /* enable APIC */
   __enable_apic();
@@ -135,11 +165,73 @@ void local_bsp_apic_init(void)
 
 }
 
+void local_apic_bsp_switch(void)
+{
+  kprintf("[LW] Leaving PIC mode to APIC mode ... ");
+  outb(0x70,0x22);
+  outb(0x71,0x23);
+
+  kprintf("OK\n");
+}
+
+/* APIC timer implementation */
+void local_apic_timer_enable(void)
+{
+  local_apic->lvt_timer.mask |= (1 << 0);
+}
+
+void local_apic_timer_disable(void)
+{
+  local_apic->lvt_timer.mask &= ~(1 << 0);
+}
+
+void local_apic_timer_calibrate(uint32_t x)
+{
+  switch(x) {
+  case 1:
+    local_apic->timer_dcr.divisor=0xb;
+    break;
+  case 2:
+    local_apic->timer_dcr.divisor=0x0;
+    break;
+  case 4:
+    local_apic->timer_dcr.divisor=0x1;
+    break;
+  case 8:
+    local_apic->timer_dcr.divisor=0x2;
+    break;
+  case 16:
+    local_apic->timer_dcr.divisor=0x3;
+    break;
+  case 32:
+    local_apic->timer_dcr.divisor=0x8;
+    break;
+  case 64:
+    local_apic->timer_dcr.divisor=0x9;
+    break;
+  case 128:
+    local_apic->timer_dcr.divisor=0xa;
+    break;
+  default:
+    return;
+  }
+}
+
+void local_apic_timer_init(void)
+{
+  local_apic_timer_calibrate(128);
+  /* set periodic mode (set bit to 1) */
+  local_apic->lvt_timer.timer_mode |= (1 << 0);
+  /* enable timer */
+  local_apic_timer_enable();
+
+}
+
 #ifdef CONFIG_SMP
 
 void arch_smp_init(void)
 {
-  uint32_t n_cpus=0;
+
 
 }
 
