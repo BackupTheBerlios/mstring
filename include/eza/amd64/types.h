@@ -56,6 +56,7 @@ typedef uint64_t count_t;
 typedef uint64_t index_t;
 typedef uint64_t uintptr_t;
 typedef uint32_t pid_t;
+typedef int32_t status_t;
 
 /* abstraction typedef */
 typedef uint64_t unative_t;

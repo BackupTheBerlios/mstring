@@ -6,6 +6,22 @@
 #include <eza/errno.h>
 #include <mm/pagealloc.h>
 
+#include <eza/kernel.h>
+#include <mlibc/kprintf.h>
+#include <eza/smp.h>
+#include <eza/arch/scheduler.h>
+#include <eza/arch/types.h>
+#include <eza/arch/bits.h>
+#include <eza/task.h>
+#include <mm/pt.h>
+#include <eza/scheduler.h>
+#include <eza/swks.h>
+#include <eza/kstack.h>
+#include <mm/pagealloc.h>
+#include <eza/arch/page.h>
+#include <eza/pageaccs.h>
+
+
 DEFINE_PER_CPU(pagelist_page_accessor_smp,page_frame_accessor_t);
 
 int initialize_stack_system_area(kernel_task_data_t *t)
@@ -44,5 +60,13 @@ void initialize_task_system_data(kernel_task_data_t *task, cpu_id_t cpu)
 {
   task->system_data.cpu_id = cpu;
   task->system_data.irq_num = 0;
+}
+
+status_t create_new_task()
+{
+  task_t *task;
+  page_frame_t *ts_page;
+
+  
 }
 
