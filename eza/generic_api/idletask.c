@@ -15,9 +15,26 @@
 
 kernel_task_data_t * idle_tasks[NR_CPUS];
 
+static void clone_fn(void *data)
+{
+  
+}
+
 void idle_loop(void)
 {
   int target_tick = swks.system_ticks_64 + 100;
+  task_t *new;
+  int r;
+
+  kprintf( "=====================================\n" );
+  kernel_thread(NULL,NULL);
+  //r = create_new_task( &new, CLONE_MM );
+  //if( r == 0 ) {
+  //  kprintf( " ** New task: PID: %d\n", new->pid );
+  //} else {
+  //  kprintf( "[!!!] Task creation failed: r = %d\n", r  );
+  // }
+  kprintf( "=====================================\n" );
 
   /* TODO: Enable rescheduling interrupts here. */
   for( ;; ) {
@@ -105,6 +122,9 @@ void initialize_idle_tasks(void)
     if( r != 0 ) {
       panic( "initialize_idle_tasks(): Can't map kernel stack for idle task !" );
     }
+
+    kprintf( ">>>> Stack: high address: 0x%X, Low address: 0x%X <<<<\n",
+             task->kernel_stack.high_address, task->kernel_stack.low_address );
 
     /* OK, now kernel stack is ready for this idle task. Finally, initialize its
      * 'system_data' structure.

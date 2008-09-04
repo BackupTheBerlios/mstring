@@ -3,6 +3,7 @@
 #define __PAGEACCS_H__ 
 
 #include <eza/arch/types.h>
+#include <mm/mm.h>
 
 /* Context for linear area page accessor. */
 typedef struct __pageaccs_linear_pa_ctx {
@@ -12,6 +13,18 @@ typedef struct __pageaccs_linear_pa_ctx {
 /* Linear area page accessor that uses 'pageaccs_linear_pa_ctx_t'
  * as its context. */
 extern page_frame_accessor_t pageaccs_linear_pa;
+
+/* Page accessor for non-contiguous physical pages. Uses a list of
+ * pageframes to map.
+ */
+typedef struct __pageaccs_list_pa_ctx {
+  page_frame_t *head, *curr;
+  page_idx_t num_pages, pages_left;
+} pageaccs_list_pa_ctx_t;
+
+/* List-based area page accessor that uses 'pageaccs_list_pa_ctx_t'
+ * as its context. */
+extern page_frame_accessor_t pageaccs_list_pa;
 
 /* Stubs for simple page accesses. */
 void pageaccs_reset_stub(void *ctx);

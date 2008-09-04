@@ -48,7 +48,6 @@
     pushq %r13; \
     pushq %r14; \
     pushq %r15; \
-    pushfq; \
     pushq %rbx; \
     pushq %rcx; \
     pushq %rdx; \
@@ -63,7 +62,6 @@
     popq %rdx; \
     popq %rcx; \
     popq %rbx; \
-    popfq; \
     popq %r15; \
     popq %r14; \
     popq %r13; \
@@ -73,7 +71,7 @@
     popq %r9; \
     popq %r8; \
 
-#define NUM_GPR_SAVED 15
+#define NUM_GPR_SAVED 14
 #define SAVED_GPR_SIZE (NUM_GPR_SAVED * 8)
 
 /* We assume that all GRPs were saved earlier !
@@ -86,15 +84,14 @@
   mov %rsp, %r9; \
   sub %r8, %r9; \
   add $512, %r9; \
-  mov %rsp, %r10; \
   sub %r9, %rsp; \
   fxsave (%rsp); \
-  pushq %r10; \
+  pushq %r9; \
 
 #define RESTORE_MM \
   popq %r10; \
   fxrstor (%rsp); \
-  mov %r10, %rsp;
+  add %r10, %rsp;
 
 /* NOTE: SAVE_MM initializes %rsi so that it points to iterrupt/exception stack frame. */
 #define SAVE_ALL \
@@ -164,12 +161,17 @@ typedef struct __arch_context_t {
   uintptr_t cr3, rsp;
 } arch_context_t;
 
-/* Structure that represent GPRs on the stack. %RAX is not saved
- * since it contains system call numbers and isn't used by the low-level
- * kernel logic.
+/* Structure that represents GPRs on the stack upon entering
+ * kernel mode during a system call.
  */
 typedef struct __regs {
+  /* Kernel-saved registers. */
   uint64_t rbp, rsi, rdi, rdx, rcx, rbx, flags;
+  uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
+  uint64_t rax;
+
+  /* CPU-saved registers. */
+  uint64_t err_code, rip, cs, rflags, old_rsp, old_ss;
 } regs_t;
 
 #endif /* __ASM__ */
