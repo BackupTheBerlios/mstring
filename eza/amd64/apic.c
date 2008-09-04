@@ -185,7 +185,7 @@ void local_apic_timer_disable(void)
   local_apic->lvt_timer.mask &= ~(1 << 0);
 }
 
-void local_apic_timer_calibrate(uint32_t x)
+static void __local_apic_timer_calibrate(uint32_t x)
 {
   switch(x) {
   case 1:
@@ -217,9 +217,13 @@ void local_apic_timer_calibrate(uint32_t x)
   }
 }
 
+void local_apic_timer_calibrate(uint32_t hz)
+{
+}
+
 void local_apic_timer_init(void)
 {
-  local_apic_timer_calibrate(128);
+  __local_apic_timer_calibrate(128);
   /* set periodic mode (set bit to 1) */
   local_apic->lvt_timer.timer_mode |= (1 << 0);
   /* enable timer */

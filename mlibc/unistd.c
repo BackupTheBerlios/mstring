@@ -15,21 +15,23 @@
  * 02111-1307, USA.
  *
  * (c) Copyright 2006,2007,2008 MString Core Team <http://mstring.berlios.de>
- * (c) Copyright 2008 Michael Tsymbalyuk <mtzaurus@gmail.com>
+ * (c) Copyright 2008 MadTirra <tirra.newly@gmail.com>
  *
- * eza/include/time.h: contains types and prototypes for dealing with
- *                     time processing.
+ * mlibc/unistd.c: kernel implementation unified routines.
  *
  */
 
-#ifndef __TIME_H__
-#define __TIME_H__ 
-
 #include <eza/arch/types.h>
+#include <mlibc/unistd.h>
+#include <eza/interrupts.h>
+#include <eza/arch/asm.h>
 
-uint32_t delay_loop;
+extern uint32_t delay_loop;
 
-void timer_tick(void);
-
-#endif
+void usleep(usec_t usecs)
+{
+  disable_all_irqs();
+  arch_delay_loop(delay_loop*usecs);
+  enable_all_irqs();
+}
 
