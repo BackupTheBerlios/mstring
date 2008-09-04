@@ -85,7 +85,22 @@ static void i8254_register_callback(irq_t irq,irq_handler_t handler)
 
 static void i8254_calibrate(uint32_t v)
 {
+  disable_hw_irq(0x0);
+  outb(I8254_BASE,(DCLOCK/v) & 0xf);
+  outb(I8254_BASE,(DCLOCK/v) >> 8);
+  enable_hw_irq(0x0);
+}
 
+static void i8254_suspend(void)
+{
+  outb(I8254_BASE+3,0x30);
+  outb(I8254_BASE,0xff);
+  outb(I8254_BASE,0xff);
+}
+
+static void i8254_resume(void)
+{
+  outb(I8254_BASE+3,0x36);
 }
 
 void i8254_init(void) 
@@ -93,8 +108,8 @@ void i8254_init(void)
   __arch_i8254_init();
   i8254.descr="generic";
   i8254.calibrate=i8254_calibrate;
-  i8254.resume=NULL;
-  i8254.suspend=NULL;
+  i8254.resume=i8254_resume;
+  i8254.suspend=i8254_suspend;
   i8254.register_callback=i8254_register_callback;
   hw_timer_register(&i8254);
 }

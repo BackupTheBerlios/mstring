@@ -66,4 +66,14 @@ void arch_specific_init(void)
     kprintf("OK\n");
 
   local_bsp_apic_init();
+
+  local_apic_timer_init();
+
+  local_apic_bsp_switch();
+
+#ifdef CONFIG_SMP
+
+  arch_smp_init();
+
+#endif
 }
