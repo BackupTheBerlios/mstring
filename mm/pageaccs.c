@@ -3,6 +3,7 @@
 #include <eza/pageaccs.h>
 #include <mm/pagealloc.h>
 #include <eza/swks.h>
+#include <eza/container.h>
 
 void pageaccs_reset_stub(void *ctx)
 {
@@ -30,13 +31,13 @@ static page_idx_t linear_pa_frames_left(void *ctx)
   }
 }
 
-static page_idx_t *linear_pa_next_frame(void *ctx)
+static page_idx_t linear_pa_next_frame(void *ctx)
 {
   pageaccs_linear_pa_ctx_t *lctx = (pageaccs_linear_pa_ctx_t*)ctx;
   return lctx->curr_page++;
 }
 
-static page_idx_t *linear_pa_reset(void *ctx)
+static void linear_pa_reset(void *ctx)
 {
   pageaccs_linear_pa_ctx_t *lctx = (pageaccs_linear_pa_ctx_t*)ctx;
   lctx->curr_page = lctx->start_page;
@@ -49,16 +50,43 @@ page_frame_accessor_t pageaccs_linear_pa = {
   .alloc_page = pageaccs_alloc_page_stub,
 };
 
-/*
 
-typedef struct __page_frame_accessor {
-  page_idx_t (*frames_left)(void);
-  page_idx_t (*next_frame)(void);
-  void (*reset)(void);
-  page_frame_t *(*alloc_page)(page_flags_t flags,int clean_page);
-} page_frame_accessor_t
+/* List-based area page accessor that uses 'pageaccs_list_page_accessor_ctx_t'
+ * as its context. */
+static page_idx_t list_pa_frames_left(void *ctx)
+{
+  pageaccs_list_pa_ctx_t *lctx = (pageaccs_list_pa_ctx_t*)ctx;
+  return lctx->pages_left;
+}
 
-*/
+static page_idx_t list_pa_next_frame(void *ctx)
+{
+  pageaccs_list_pa_ctx_t *lctx = (pageaccs_list_pa_ctx_t*)ctx;
+
+  if( lctx->pages_left != 0 ) {
+    page_frame_t *f = container_of(lctx->curr,page_frame_t,active_list);
+
+    lctx->curr = lctx->curr->active_list.next;
+    lctx->pages_left--;
+    return f->idx;
+  } else {
+    return INVALID_PAGE_IDX;
+  }
+}
+
+static void list_pa_reset(void *ctx)
+{
+  pageaccs_list_pa_ctx_t *lctx = (pageaccs_list_pa_ctx_t*)ctx;
+
+  lctx->curr = lctx->head;
+  lctx->pages_left = lctx->num_pages;
+}
 
 
+page_frame_accessor_t pageaccs_list_pa = {
+  .frames_left = list_pa_frames_left,
+  .next_frame = list_pa_next_frame,
+  .reset = list_pa_reset,
+  .alloc_page = pageaccs_alloc_page_stub,
+};
 

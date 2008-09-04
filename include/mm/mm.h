@@ -59,6 +59,8 @@ typedef enum __page_alloc_flags {
   PAF_DMA_PAGE = 1,
 } page_alloc_flags_t;
 
+#define GENERIC_KERNEL_PAGE  0 /* Flags for default kernel page allocation */
+
 typedef struct __memory_zone {
   page_idx_t num_total_pages, num_free_pages, num_reserved_pages;
   list_head_t pages, reserved_pages;
