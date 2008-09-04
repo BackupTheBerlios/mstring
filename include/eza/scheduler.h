@@ -62,6 +62,8 @@ typedef struct __task_struct {
   kernel_stack_t kernel_stack;
   page_directory_t page_dir;
 
+  /* Arch-dependent context is located here */
+  uint8_t arch_context[];
 } task_t;
 
 

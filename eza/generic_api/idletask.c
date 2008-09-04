@@ -18,7 +18,6 @@ kernel_task_data_t * idle_tasks[NR_CPUS];
 void idle_loop(void)
 {
   int target_tick = swks.system_ticks_64 + 100;
-  task_t *c = current_task();
 
   /* TODO: Enable rescheduling interrupts here. */
   for( ;; ) {

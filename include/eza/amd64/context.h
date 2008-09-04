@@ -16,6 +16,7 @@
  *
  * (c) Copyright 2006,2007,2008 MString Core Team <http://mstring.berlios.de>
  * (c) Copyright 2008 Tirra <tirra.newly@gmail.com>
+ * (c) Copyright 2008 Michael Tsymbalyuk <mtzaurus@gmail.com>
  *
  * include/eza/amd64/context.h: structure definion for context and related stuff
  *                              assembler macros and some constants
@@ -36,6 +37,78 @@
 #define OFFSET_IPL  0x40
 
 #define OFFSET_TLS  OFFSET_IPL
+
+/* Save all general purpose registers  */
+#define SAVE_GPR \
+    pushq %r8; \
+    pushq %r9; \
+    pushq %r10; \
+    pushq %r11; \
+    pushq %r12; \
+    pushq %r13; \
+    pushq %r14; \
+    pushq %r15; \
+    pushfq; \
+    pushq %rbx; \
+    pushq %rcx; \
+    pushq %rdx; \
+    pushq %rdi; \
+    pushq %rsi; \
+    pushq %rbp; \
+
+#define RESTORE_GPR \
+    popq %rbp; \
+    popq %rsi; \
+    popq %rdi; \
+    popq %rdx; \
+    popq %rcx; \
+    popq %rbx; \
+    popfq; \
+    popq %r15; \
+    popq %r14; \
+    popq %r13; \
+    popq %r12; \
+    popq %r11; \
+    popq %r10; \
+    popq %r9; \
+    popq %r8; \
+
+#define NUM_GPR_SAVED 15
+#define SAVED_GPR_SIZE (NUM_GPR_SAVED * 8)
+
+/* We assume that all GRPs were saved earlier !
+ * Allocate an area for saving MMX & FX state. Finally, we must adjust %rdi
+ * to point just after saved GPRs area.
+ */
+#define SAVE_MM \
+  mov %rsp, %r8; \
+  and $0xfffffffffffffe00, %r8; \
+  mov %rsp, %r9; \
+  sub %r8, %r9; \
+  add $512, %r9; \
+  mov %rsp, %r10; \
+  sub %r9, %rsp; \
+  fxsave (%rsp); \
+  pushq %r10; \
+
+#define RESTORE_MM \
+  popq %r10; \
+  fxrstor (%rsp); \
+  mov %r10, %rsp;
+
+/* NOTE: SAVE_MM initializes %rsi so that it points to iterrupt/exception stack frame. */
+#define SAVE_ALL \
+  SAVE_GPR \
+  cli; \
+  SAVE_MM \
+
+
+#define RESTORE_ALL \
+  RESTORE_MM \
+  RESTORE_GPR
+
+#define SAVED_REGISTERS_SIZE \
+   ((NUM_GPR_SAVED)*8)
 
 /* assembler macros for save and restore context */
 #ifdef __ASM__
@@ -86,6 +159,18 @@ typedef struct __context_t { /* others don't interesting... */
 
   ipl_t ipl;
 } __attribute__ ((packed)) context_t;
+
+typedef struct __arch_context_t {
+  uintptr_t cr3, rsp;
+} arch_context_t;
+
+/* Structure that represent GPRs on the stack. %RAX is not saved
+ * since it contains system call numbers and isn't used by the low-level
+ * kernel logic.
+ */
+typedef struct __regs {
+  uint64_t rbp, rsi, rdi, rdx, rcx, rbx, flags;
+} regs_t;
 
 #endif /* __ASM__ */
 
