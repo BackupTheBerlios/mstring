@@ -54,3 +54,7 @@ void hw_timer_register (hw_timer_t *ctrl)
   RELEASE_TIMER_LOCK();
 }
 
+void hw_timer_generic_suspend(void)
+{
+
+}

@@ -23,10 +23,8 @@
 
 #include <eza/arch/types.h>
 #include <mlibc/unistd.h>
-#include <eza/interrupts.h>
+#include <eza/interrupt.h>
 #include <eza/arch/asm.h>
-
-extern uint32_t delay_loop;
 
 void usleep(usec_t usecs)
 {

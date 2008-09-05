@@ -27,7 +27,10 @@
 #include <eza/arch/types.h>
 #include <eza/arch/asm.h>
 #include <eza/arch/apic.h>
+#include <eza/arch/mm_types.h>
+#include <eza/arch/interrupt.h>
 #include <mlibc/kprintf.h>
+#include <mlibc/unistd.h>
 
 /*
  * Black mages from intel and amd wrote that
@@ -141,27 +144,46 @@ void local_bsp_apic_init(void)
   v=local_apic->version.version;
   kprintf("[LW] APIC version: %d\n",v);
   /* first we're need to clear APIC to avoid magical results */
-  __local_apic_clear();
+  //  __local_apic_clear();
 
   /* enable APIC */
   __enable_apic();
+  local_apic->svr.spurious_vector &= ~(1 << 8);
+  /*set spurois vector*/
+  local_apic->svr.spurious_vector |= (1 << 8);
 
   /* enable wire mode*/
+  local_apic->lvt_lint0.mask &= ~(1 << 0);
+
   /* set nil vectors */
 
   __set_lvt_lint_vector(0,0x0);
   __set_lvt_lint_vector(1,0x0);
+
 
   /*set mode#7 for lint0*/
   local_apic->lvt_lint0.tx_mode=0x7;
   /*set mode#4 for lint1*/
   local_apic->lvt_lint1.tx_mode=0x4;
 
+  local_apic->lvt_lint1.mask &= ~(1 << 0);
+
   /*tx_mode & polarity set to 0 on both lintx*/
-  local_apic->lvt_lint0.tx_status |= (1 << 0);
-  local_apic->lvt_lint0.polarity |= (1 << 0);
-  local_apic->lvt_lint1.tx_status |= (1 << 0);
-  local_apic->lvt_lint1.polarity |= (1 << 0);
+  local_apic->lvt_lint0.tx_status &= ~(1 << 0);
+  local_apic->lvt_lint0.polarity &= ~(1 << 0);
+  local_apic->lvt_lint1.tx_status &= ~(1 << 0);
+  local_apic->lvt_lint1.polarity &= ~(1 << 0);
+
+  /* ok, now we're need to set esr vector to 0xfe */
+  local_apic->lvt_error.vector = 0xfe;
+
+  /*enable to receive errors*/
+  if(__get_maxlvt()>3)
+    local_apic->esr.tx_cs_err &= ~(1 << 0);
+
+
+  /*FIXME: just for debug */
+
 
 }
 
@@ -177,12 +199,12 @@ void local_apic_bsp_switch(void)
 /* APIC timer implementation */
 void local_apic_timer_enable(void)
 {
-  local_apic->lvt_timer.mask |= (1 << 0);
+  local_apic->lvt_timer.mask &= ~(1 << 0);
 }
 
 void local_apic_timer_disable(void)
 {
-  local_apic->lvt_timer.mask &= ~(1 << 0);
+  local_apic->lvt_timer.mask |= (1 << 0);
 }
 
 static void __local_apic_timer_calibrate(uint32_t x)
@@ -219,16 +241,36 @@ static void __local_apic_timer_calibrate(uint32_t x)
 
 void local_apic_timer_calibrate(uint32_t hz)
 {
+  uint32_t x1,x2;
+
+  x1=local_apic->timer_ccr.count;
+  local_apic->timer_icr.count=fil;
+
+  while(local_apic->timer_icr.count==x1)
+    ;
+
+  x1=local_apic->timer_ccr.count;
+  usleep(1000000/hz);
+  x2=local_apic->timer_ccr.count;
+
+  /*ok, let's write a difference to icr*/
+  local_apic->timer_icr.count=x1-x2;
 }
+
+/*extern void i8254_suspend(void);*/
+
+extern void timer_interrupt_handler(void *data);
 
 void local_apic_timer_init(void)
 {
   __local_apic_timer_calibrate(128);
   /* set periodic mode (set bit to 1) */
   local_apic->lvt_timer.timer_mode |= (1 << 0);
+  /*calibrate to hz*/
+  local_apic_timer_calibrate(HZ);
   /* enable timer */
   local_apic_timer_enable();
-
+  /*  i8254_suspend();*/
 }
 
 #ifdef CONFIG_SMP
