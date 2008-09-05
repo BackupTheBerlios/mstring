@@ -28,7 +28,6 @@
 .global arch_context_save
 .global arch_context_restore
 .global arch_hw_activate_task
-.global arch_hw_activate_task1
 
 #include <eza/arch/context.h>
 	
@@ -50,31 +49,21 @@ arch_context_restore:
 	ret
 
 /* 
- * %rdi: contains TLB4 value (%cr3) of the task being activated. 
- * %rsi: contains %rsp of the task being activated. 
- * %rdx: pointer to area where to save %rsp of current task.
+ * %rdi: contains stack pointer of the task being activated. 
+ * %rsi: contains TLB4 value (cr3) of the task being activated. 
  */
 arch_hw_activate_task:
   pushq %rax
   SAVE_ALL
 
   pushq $__return_from_sleep
-
-  movq %cr3, %rax;
-  cmp %rdi, %rax;
-  je lcr3;
-
-  movq %rdi, %rax
+  movq %rsi, %rax
   movq %rax, %cr3
-
-lcr3:
-  mov %rsp, (%rdx)
-  mov %rsi, %rsp
+  mov %rdi, %rsp
   retq
 
 __return_from_sleep:
   RESTORE_ALL
   popq %rax
-  sti
   retq
 

@@ -55,7 +55,6 @@
 .global security_exception_fault_handler
 .global hi_level_fault_handlers 
 
-.global child_fork_path
 
 arch_delay_loop:
 0:	dec %rdi
@@ -100,10 +99,6 @@ syscall_point:
         swapgs
 	
         sysretq
-
-child_fork_path:
-    RESTORE_ALL
-    iretq
 
 /* Initialize low-level IRQ stubs. Thank Linux team for a very good approach !
  */
