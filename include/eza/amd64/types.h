@@ -92,6 +92,5 @@ typedef struct {
   unsigned nx: 1;
 } __attribute__ ((packed)) pte_t;
 
-
 #endif
 
