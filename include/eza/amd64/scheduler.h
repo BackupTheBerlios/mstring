@@ -51,17 +51,16 @@ static inline system_sched_data_t *arch_system_sched_data(void)
   return &t->system_data;
 }
 
-void arch_hw_activate_task( uintptr_t sp, uintptr_t cr3, uintptr_t *saved_sp );
+void arch_hw_activate_task( uintptr_t sp, uintptr_t cr3 );
 
-static inline void arch_switch_tasks(task_t *to)
+static inline void arch_activate_task( task_t *task )
 {
-  task_t *from = current_task();
-  arch_context_t *from_ctx = (arch_context_t*)&from->arch_context[0];
-  arch_context_t *to_ctx = (arch_context_t*)&to->arch_context[0];
+  arch_context_t *ctx = (arch_context_t*)&task->arch_context[0];
 
   /* Let's jump ! */
-  arch_hw_activate_task(to_ctx->cr3,to_ctx->rsp,&from_ctx->rsp);
+  arch_hw_activate_task(ctx->rsp, ctx->cr3);
 }
+
 
 #endif
 
