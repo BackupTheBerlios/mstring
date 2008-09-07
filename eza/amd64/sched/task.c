@@ -76,7 +76,7 @@ status_t arch_copy_process(task_t *parent,task_t *newtask,void *arch_ctx,
       /* Copy context to new task's kernel stack. */
       memcpy(stack,arch_ctx,offset);
 
-      regs->old_rsp = newtask->kernel_stack.high_address - 128;
+      regs->old_rsp = newtask->kernel_stack.high_address;
       /* cr3 was already setup in 'arch_setup_task_context()' */
       ctx->rsp = (uint64_t)stack;
 
