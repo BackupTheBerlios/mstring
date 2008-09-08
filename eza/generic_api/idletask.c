@@ -47,7 +47,7 @@ void clone_fn(void *data)
         task_t *t = idle_tasks[0];
         rounds = 0;
 
-        arch_switch_tasks(t);
+        arch_activate_task(t);
         target_tick = swks.system_ticks_64 + 100;
       }
     }
@@ -75,7 +75,7 @@ void idle_loop(void)
         task_t *t = kthread1;
 
         rounds = 0;
-        arch_switch_tasks(t);
+        arch_activate_task(t);
         target_tick = swks.system_ticks_64 + 100;
       }
     }

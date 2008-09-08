@@ -11,23 +11,31 @@
 #include <eza/kernel.h>
 #include <eza/pageaccs.h>
 #include <eza/list.h>
+#include <eza/arch/task.h>
 
 extern task_t *kthread1;
 
-status_t do_fork(void *arch_ctx, task_creation_flags_t flags)
+status_t create_task(task_t *parent,task_creation_flags_t flags,task_privelege_t priv,
+                     task_t **newtask)
 {
   task_t *new_task;
   status_t r;
-  task_t *parent = current_task();
 
-  r = create_new_task(parent,&new_task,flags);
+  r = create_new_task(parent,&new_task,flags,priv);
   if(r == 0) {
-    r = arch_copy_process(parent,new_task,arch_ctx,flags);
+    r = arch_setup_task_context(new_task,flags,priv);
     if(r == 0) {
       /* New task is ready. */
       kthread1 = new_task;
     } else {
     }
+  }
+
+  if( newtask != NULL ) {
+    if(r<0) {
+      new_task = NULL;
+    }
+    *newtask = new_task;
   }
 
   return r;

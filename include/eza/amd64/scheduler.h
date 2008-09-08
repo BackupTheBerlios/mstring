@@ -53,7 +53,7 @@ static inline system_sched_data_t *arch_system_sched_data(void)
 
 void arch_hw_activate_task( uintptr_t sp, uintptr_t cr3, uintptr_t *saved_sp );
 
-static inline void arch_switch_tasks(task_t *to)
+static inline void arch_activate_task(task_t *to)
 {
   task_t *from = current_task();
   arch_context_t *from_ctx = (arch_context_t*)&from->arch_context[0];
