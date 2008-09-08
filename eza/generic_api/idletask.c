@@ -47,7 +47,7 @@ void clone_fn(void *data)
         task_t *t = idle_tasks[0];
         rounds = 0;
 
-        arch_switch_tasks(t);
+        arch_activate_task(t);
         target_tick = swks.system_ticks_64 + 100;
       }
     }
@@ -68,14 +68,14 @@ void idle_loop(void)
     if( swks.system_ticks_64 == target_tick ) {
       kprintf( " - Tick, tick ! ( %d, PID: %d, CPU ID: %d\n",
                swks.system_ticks_64, current_task()->pid, system_sched_data()->cpu_id );
-      target_tick += 10150;
+      target_tick += 10000;
       rounds++;
 
       if( rounds >= 3 ) {
         task_t *t = kthread1;
 
         rounds = 0;
-        arch_switch_tasks(t);
+        arch_activate_task(t);
         target_tick = swks.system_ticks_64 + 100;
       }
     }

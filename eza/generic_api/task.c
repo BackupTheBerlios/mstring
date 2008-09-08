@@ -33,6 +33,7 @@
 #include <eza/kernel.h>
 #include <eza/pageaccs.h>
 #include <eza/list.h>
+#include <eza/arch/task.h>
 
 int setup_task_kernel_stack(task_t *task)
 {
@@ -101,7 +102,7 @@ static status_t initialize_mm( task_t *orig, task_t *target,
 
 static pid_t pid = 1;
 
-status_t create_new_task( task_t *parent, task_t **t, task_creation_flags_t flags )
+status_t create_new_task( task_t *parent, task_t **t, task_creation_flags_t flags,task_privelege_t priv)
 {
   task_t *task;
   page_frame_t *ts_page;
@@ -136,6 +137,7 @@ status_t create_new_task( task_t *parent, task_t **t, task_creation_flags_t flag
   /* TODO: [mt] Implement normal stack allocation. */
   stack_pages = alloc_stack_pages();
   if(stack_pages == NULL) {
+    r = -ENOMEM;
     goto free_mm;
   }
 
@@ -160,12 +162,6 @@ status_t create_new_task( task_t *parent, task_t **t, task_creation_flags_t flag
                     KERNEL_STACK_PAGE_FLAGS, &l_ctx );
   if( r != 0 ) {
     goto unmap_stack_pages;
-  }
-
-  /* Now perform arch-specific task creation manipulations. */
-  r = arch_setup_task_context(task,flags);
-  if(r != 0) {
-    goto unmap_task_struct;
   }
 
   /* Initialize task system data. */
