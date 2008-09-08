@@ -24,16 +24,10 @@
 
 #include <eza/arch/types.h>
 #include <eza/arch/i8254.h>
-#include <eza/timer.h>
-#include <eza/time.h>
-#include <mlibc/kprintf.h>
 
 void arch_timer_init(void)
 {
   i8254_init();
-  kprintf("[LW] Calibrating delay loop ... ");
-  delay_loop=i8254_calibrate_delay_loop();
-  kprintf("%ld\n",delay_loop);
 }
 
 uint64_t arch_calibrate_delay_loop(void)

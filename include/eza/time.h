@@ -27,8 +27,6 @@
 
 #include <eza/arch/types.h>
 
-uint32_t delay_loop;
-
 void timer_tick(void);
 
 #endif

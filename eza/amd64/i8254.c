@@ -91,7 +91,7 @@ static void i8254_calibrate(uint32_t v)
   enable_hw_irq(0x0);
 }
 
-/*static*/ void i8254_suspend(void)
+static void i8254_suspend(void)
 {
   outb(I8254_BASE+3,0x30);
   outb(I8254_BASE,0xff);

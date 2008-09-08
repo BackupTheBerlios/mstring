@@ -56,7 +56,6 @@ typedef uint64_t count_t;
 typedef uint64_t index_t;
 typedef uint64_t uintptr_t;
 typedef uint32_t pid_t;
-typedef uint32_t usec_t;
 typedef int32_t status_t;
 
 /* abstraction typedef */
@@ -91,6 +90,7 @@ typedef struct {
   unsigned available_52_62: 11;
   unsigned nx: 1;
 } __attribute__ ((packed)) pte_t;
+
 
 #endif
 

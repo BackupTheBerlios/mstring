@@ -29,7 +29,7 @@
 #include <eza/arch/mm_types.h>
 #include <eza/kernel.h>
 
-/*static*/ void timer_interrupt_handler(void *data)
+static void timer_interrupt_handler(void *data)
 {
   timer_tick();
   scheduler_tick();
