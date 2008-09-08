@@ -7,6 +7,7 @@
 status_t arch_copy_process(task_t *parent,task_t *newtask,void *arch_ctx,
                            task_creation_flags_t flags)
 {
+  // Bla ! Bla !
   return 0;
 }
 
