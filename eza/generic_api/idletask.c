@@ -26,7 +26,7 @@ void idle_loop(void)
   task_t *new;
   int r;
 
-  kprintf( "=====================================\n" );
+  kprintf( "+++=====================================\n" );
   kernel_thread(NULL,NULL);
   //r = create_new_task( &new, CLONE_MM );
   //if( r == 0 ) {
